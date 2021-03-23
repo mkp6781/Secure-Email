@@ -1,0 +1,16 @@
+#!/usr/bin/env python3
+import sys
+from userinterface import *
+
+if __name__ == "__main__":
+    # get the method name from the command line      
+    methodname = sys.argv[1]
+    # get all other arguments from the command line      
+    params = sys.argv[2:]
+    ui = UserInterface()
+    if methodname == "CreateKeys":
+        ui.CreateKeys(*params)
+    elif methodname == "CreateMail":
+        ui.CreateMail(*params)
+    elif methodname == "ReadMail":
+        ui.ReadMail(*params)
