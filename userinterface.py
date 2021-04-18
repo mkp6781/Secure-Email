@@ -63,9 +63,11 @@ class UserInterface:
             secret_key = secret_key_and_iv[:-1*block_size_in_bytes]
             cipher = Cipher(symmetric_cipher(secret_key), modes.CBC(iv))
             decryptor = cipher.decryptor()
-            original_message_bytes = decryptor.update(encrypted_data)
-            original_message = original_message_bytes.decode('utf-8').rstrip()
-            original_message = original_message + "\n"
+            padded_original_message_bytes = decryptor.update(encrypted_data)
+            unpadder = pad.PKCS7(128).unpadder()
+            original_message_bytes = unpadder.update(padded_original_message_bytes)
+            original_message_bytes+=unpadder.finalize()
+            original_message = original_message_bytes.decode('utf-8')
 
         elif pgp_type == "AUIN":
             plaintext_message = plain_or_encrypted_message
@@ -102,7 +104,11 @@ class UserInterface:
             secret_key = secret_key_and_iv[:-1*block_size_in_bytes]
             cipher = Cipher(symmetric_cipher(secret_key), modes.CBC(iv))
             decryptor = cipher.decryptor()
-            original_message_bytes = decryptor.update(encrypted_data)
+            padded_original_message_bytes = decryptor.update(encrypted_data)
+            unpadder = pad.PKCS7(128).unpadder()
+            original_message_bytes = unpadder.update(padded_original_message_bytes)
+            original_message_bytes+=unpadder.finalize()
+
             if int(keysize) == 1024:
                 hash_digest_end_index = 128
             elif int(keysize) == 2048:
@@ -110,7 +116,7 @@ class UserInterface:
 
             encrypted_hash_bytes = original_message_bytes[:hash_digest_end_index]
             original_message = original_message_bytes[hash_digest_end_index:]
-            original_message = original_message.decode('utf-8').rstrip() + "\n"
+            original_message = original_message.decode('utf-8')
             
         with open(plaintext_out, "w") as output:
             output.write(original_message)
